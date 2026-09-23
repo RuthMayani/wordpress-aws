@@ -52,3 +52,12 @@ terraform.rc
 *.key
 *.sql
 *.sql.gz
+
+# Local Python environment
+.venv/
+
+# Generated deployment packages
+/dist/
+
+# Public AWS RDS certificate bundle
+!docker/production/rds-ca.pem

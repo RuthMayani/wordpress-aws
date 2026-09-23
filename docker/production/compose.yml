@@ -1,0 +1,42 @@
+name: wordpress-aws
+
+services:
+  wordpress:
+    image: wordpress:php8.3-apache
+    restart: unless-stopped
+    volumes:
+      - wordpress_core:/var/www/html
+      - /srv/wordpress/content:/var/www/html/wp-content
+      - ./wp-config.php:/var/www/html/wp-config.php:ro
+      - ./healthz.php:/var/www/html/healthz.php:ro
+      - ./php.ini:/usr/local/etc/php/conf.d/wordpress.ini:ro
+      - ./rds-ca.pem:/etc/ssl/certs/rds-ca.pem:ro
+      - type: bind
+        source: /run/wordpress/app.json
+        target: /run/secrets/app.json
+        read_only: true
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  nginx:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    depends_on:
+      - wordpress
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  wordpress_core:
